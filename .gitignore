@@ -1,0 +1,33 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Windows ADS files
+*:Zone.Identifier
+
+# Logs
+*.log
+
+# Model checkpoints
+training/checkpoints/
+
+# Processed data
+data/processed/
+
+# Raw datasets
+data/raw/
+
+# Generated CSVs
+data/insat_lst_complete.csv
+data/insat_lst_ml_ready.csv
+
+# Images
+*.png
+
+# Virtual environments
+venv/
+.venv/
+
+# IDEs
+.vscode/
+.idea/

@@ -1,0 +1,98 @@
+# ─────────────────────────────────────────────
+# GraphCast-India: Central Configuration
+# PS-5 Bharatiya Antariksh Hackathon 2026
+# ─────────────────────────────────────────────
+
+# ── Paths ────────────────────────────────────
+paths:
+  raw_imd:       "./data/raw/imd"
+  raw_insat:     "./data/raw/insat"
+  processed:     "./data/processed"
+  graph:         "./data/processed/graph.pt"
+  checkpoints:   "./training/checkpoints"
+  results:       "./evaluation/results"
+  figures:       "./visualization/figures"
+
+# ── IMD Grid ─────────────────────────────────
+imd:
+  # Rainfall: 0.25° x 0.25° grid
+  rainfall:
+    lat_start:  6.5
+    lat_end:    38.5
+    lon_start:  66.5
+    lon_end:    100.0
+    resolution: 0.25
+    missing:    99.9
+
+  # Temperature: 1.0° x 1.0° grid
+  temperature:
+    lat_start:  7.5
+    lat_end:    37.5
+    lon_start:  67.5
+    lon_end:    97.5
+    resolution: 1.0
+    missing:    99.9
+
+# ── INSAT Products ───────────────────────────
+insat:
+  products:
+    - name: "LST"
+      key:  "L2B_LST"
+      file_pattern: "*L2B_LST*.h5"
+    - name: "SST"
+      key:  "L2B_SST"
+      file_pattern: "*L2B_SST*.h5"
+    - name: "IMC"
+      key:  "L2B_IMC"
+      file_pattern: "*L2B_IMC*.h5"
+
+# ── Graph ────────────────────────────────────
+graph:
+  # Use coarser 0.5° grid for laptop (fewer nodes = faster)
+  # Change to 0.25 for full resolution submission
+  resolution:   0.5
+  k_neighbors:  8        # connect each node to 8 nearest
+  lat_bounds:   [6.5, 38.5]
+  lon_bounds:   [66.5, 100.0]
+
+# ── Model ────────────────────────────────────
+model:
+  node_features:      6    # rainfall, tmax, tmin, LST, SST, IMC
+  hidden_dim:         128
+  n_process_layers:   6    # message passing rounds
+  seq_len:            7    # 7 days of history as input
+  pred_steps:         3    # predict 3 days ahead
+  dropout:            0.1
+
+# ── Training ─────────────────────────────────
+training:
+  epochs:             50
+  batch_size:         4
+  learning_rate:      1e-4
+  weight_decay:       1e-5
+  grad_clip:          1.0
+  val_split:          0.15
+  test_split:         0.10
+  scheduler:          "cosine"   # cosine | step | none
+  early_stopping:     10         # patience (epochs)
+
+  # RTX 3050 optimizations
+  mixed_precision:    true       # fp16 training
+  pin_memory:         true
+  num_workers:        2
+
+# ── Evaluation ───────────────────────────────
+evaluation:
+  metrics:
+    - RMSE
+    - MAE
+    - Bias
+    - CSI        # Critical Success Index (rainfall hit rate)
+    - ETS        # Equitable Threat Score
+  rainfall_thresholds: [1.0, 5.0, 10.0, 25.0]   # mm/day
+
+# ── Synthetic Data (for testing without real data) ──
+synthetic:
+  year:       2023
+  n_days:     365
+  seed:       42
